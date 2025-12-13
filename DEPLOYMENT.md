@@ -11,7 +11,7 @@ This guide explains how to deploy the Pharmacy RAG Assistant to Streamlit Commun
 
 ### 1. Fork the Repository
 
-1. Go to https://github.com/KrishnaHarish/pharmacy-rag-streamlit
+1. Go to https://github.com/Dattatray97/Pharmacy-rag-streamlit
 2. Click "Fork" in the top-right corner
 3. Wait for the fork to complete
 
