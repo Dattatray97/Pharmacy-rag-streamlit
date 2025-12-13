@@ -1,0 +1,8 @@
+# Streamlit Community Cloud - Local RAG Dependencies
+streamlit>=1.38.0
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.4
+pandas>=2.0.0
+numpy>=1.24.0
+llama-cpp-python>=0.2.0
+requests>=2.31.0
