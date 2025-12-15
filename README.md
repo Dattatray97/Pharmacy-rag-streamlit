@@ -24,9 +24,9 @@ A fully self-contained Retrieval-Augmented Generation (RAG) application for phar
 
 ### Local Development
 
-1. **Clone the repository**
+1. **The repository**
    ```bash
-   git clone https://github.com/Dattatray97/pharmacy-rag-streamlit.git
+   https://github.com/Dattatray97/pharmacy-rag-streamlit.git
    cd pharmacy-rag-streamlit
    ```
 
