@@ -16,17 +16,16 @@ A fully self-contained Retrieval-Augmented Generation (RAG) application for phar
 
 ### Deploy to Streamlit Community Cloud
 
-1. Fork this repository
+1. Use this repository for deployment
 2. Go to [share.streamlit.io](https://share.streamlit.io)
-3. Deploy from your forked repository
+3. Deploy the application
 4. On first run, the app will download the TinyLlama GGUF model (~640MB)
 5. Subsequent runs load from cache instantly
 
 ### Local Development
 
-1. **Clone the repository**
+1. **Set up locally**
    ```bash
-   git clone https://github.com/Dattatray97/pharmacy-rag-streamlit.git
    cd pharmacy-rag-streamlit
    ```
 
