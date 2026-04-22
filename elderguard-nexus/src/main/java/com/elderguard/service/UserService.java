@@ -38,6 +38,10 @@ public class UserService implements UserDetailsService {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
+        if (user.getEmail() != null && !user.getEmail().isBlank()
+                && userRepository.existsByEmail(user.getEmail())) {
+            throw new RuntimeException("Email address is already registered");
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
