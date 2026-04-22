@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency SOS - ElderGuard Nexus</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117; --bg-secondary: #161b22; --bg-card: #1c2333; --bg-hover: #21262d;
+            --border: #30363d; --text-primary: #e6edf3; --text-secondary: #8b949e; --text-muted: #6e7681;
+            --accent-cyan: #58d5c8; --accent-blue: #58a6ff; --accent-green: #3fb950;
+            --accent-yellow: #d29922; --accent-red: #f85149; --accent-purple: #bc8cff;
+            --gradient-1: linear-gradient(135deg, #58d5c8, #58a6ff);
+            --gradient-danger: linear-gradient(135deg, #f85149, #ff7b72);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+        .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 42px; height: 42px; background: var(--gradient-1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; }
+        .logo-text h2 { font-size: 16px; font-weight: 700; }
+        .logo-text span { font-size: 11px; color: var(--text-muted); }
+        .nav-section { padding: 16px 12px 8px; }
+        .nav-section-title { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 8px; margin-bottom: 6px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: var(--text-secondary); font-size: 14px; font-weight: 500; text-decoration: none; transition: all 0.2s; margin-bottom: 2px; }
+        .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .nav-item.active { background: rgba(248,81,73,0.1); color: var(--accent-red); }
+        .nav-item i { width: 18px; text-align: center; font-size: 15px; }
+        .nav-badge { margin-left: auto; background: var(--accent-red); color: white; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+        .sidebar-footer { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border); }
+        .user-info { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg-card); }
+        .user-avatar { width: 36px; height: 36px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 700; }
+        .user-details h4 { font-size: 13px; font-weight: 600; }
+        .user-details span { font-size: 11px; color: var(--text-muted); }
+        .logout-btn { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; background: rgba(248,81,73,0.1); color: var(--accent-red); border: none; cursor: pointer; width: 100%; font-size: 13px; font-weight: 500; margin-top: 8px; transition: all 0.2s; }
+        .logout-btn:hover { background: rgba(248,81,73,0.2); }
+        .main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+        .topbar { padding: 16px 28px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .page-title h1 { font-size: 20px; font-weight: 700; }
+        .page-title p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .content { padding: 24px 28px; flex: 1; }
+        .flash-sos { background: rgba(248,81,73,0.12); color: var(--accent-red); border: 1px solid rgba(248,81,73,0.3); padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 12px; font-weight: 600; animation: pulseBorder 1s ease-in-out 3; }
+        .flash-success { background: rgba(63,185,80,0.1); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.2); padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        @keyframes pulseBorder { 0%,100% { box-shadow: 0 0 0 0 rgba(248,81,73,0) } 50% { box-shadow: 0 0 0 6px rgba(248,81,73,0.2) } }
+        .layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
+        .sos-trigger-card { background: linear-gradient(135deg, rgba(248,81,73,0.1), rgba(255,80,50,0.05)); border: 2px solid rgba(248,81,73,0.4); border-radius: 18px; padding: 28px; text-align: center; margin-bottom: 20px; position: sticky; top: 80px; }
+        .sos-btn-giant { width: 140px; height: 140px; background: var(--gradient-danger); border-radius: 50%; border: none; cursor: pointer; font-size: 50px; color: white; display: flex; align-items: center; justify-content: center; margin: 20px auto; transition: all 0.3s; box-shadow: 0 0 0 0 rgba(248,81,73,0.4); animation: sosGlow 2s ease-in-out infinite; position: relative; }
+        .sos-btn-giant:hover { transform: scale(1.07); box-shadow: 0 15px 40px rgba(248,81,73,0.5); }
+        .sos-btn-giant:active { transform: scale(0.97); }
+        @keyframes sosGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(248,81,73,0.5) } 50% { box-shadow: 0 0 0 15px rgba(248,81,73,0) } }
+        .sos-card-title { font-size: 20px; font-weight: 800; color: var(--accent-red); }
+        .sos-card-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 6px; }
+        .sos-form { margin-top: 20px; text-align: left; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 10px 13px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none; transition: all 0.2s; font-family: inherit; }
+        .form-control:focus { border-color: var(--accent-red); box-shadow: 0 0 0 3px rgba(248,81,73,0.1); }
+        .form-control::placeholder { color: var(--text-muted); }
+        select.form-control option { background: var(--bg-card); }
+        .btn-sos-full { width: 100%; padding: 14px; background: var(--gradient-danger); border: none; border-radius: 10px; color: white; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 14px; }
+        .btn-sos-full:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 10px 25px rgba(248,81,73,0.4); }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+        .mini-stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+        .mini-stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .mini-stat-info h3 { font-size: 20px; font-weight: 800; }
+        .mini-stat-info p { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .card-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 9px; }
+        .card-title i { color: var(--accent-red); }
+        table { width: 100%; border-collapse: collapse; }
+        th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
+        td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-critical { background: rgba(248,81,73,0.18); color: var(--accent-red); border: 1px solid rgba(248,81,73,0.3); }
+        .badge-high { background: rgba(248,81,73,0.1); color: #ff9090; }
+        .badge-medium { background: rgba(210,153,34,0.12); color: var(--accent-yellow); }
+        .badge-low { background: rgba(63,185,80,0.12); color: var(--accent-green); }
+        .badge-active { background: rgba(248,81,73,0.12); color: var(--accent-red); }
+        .badge-resolved { background: rgba(63,185,80,0.12); color: var(--accent-green); }
+        .badge-ack { background: rgba(210,153,34,0.12); color: var(--accent-yellow); }
+        .resolve-btn { padding: 5px 12px; background: rgba(63,185,80,0.1); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.2); border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .resolve-btn:hover { background: rgba(63,185,80,0.2); }
+        .active-alert-row { background: rgba(248,81,73,0.03); }
+        .empty-state { text-align: center; padding: 50px; color: var(--text-muted); }
+        .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.3; display: block; }
+        .severity-critical { color: var(--accent-red); font-weight: 700; }
+        .severity-high { color: #ff9090; font-weight: 700; }
+        .severity-medium { color: var(--accent-yellow); font-weight: 700; }
+        .severity-low { color: var(--accent-green); font-weight: 700; }
+    </style>
+</head>
+<body>
+<nav class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fas fa-shield-heart"></i></div>
+        <div class="logo-text"><h2>ElderGuard</h2><span>Nexus v1.0</span></div>
+    </div>
+    <div style="flex:1; overflow-y:auto; padding: 8px 0;">
+        <div class="nav-section">
+            <div class="nav-section-title">Main</div>
+            <a href="/dashboard" class="nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="/patients" class="nav-item"><i class="fas fa-users"></i> Patients</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Clinical</div>
+            <a href="/health" class="nav-item"><i class="fas fa-heartbeat"></i> Health Monitor</a>
+            <a href="/emergency" class="nav-item active">
+                <i class="fas fa-exclamation-triangle"></i> Emergency SOS
+                <span class="nav-badge" th:if="${not #lists.isEmpty(activeAlerts)}" th:text="${#lists.size(activeAlerts)}"></span>
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Services</div>
+            <a href="/orders" class="nav-item"><i class="fas fa-shopping-cart"></i> Orders</a>
+        </div>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar" th:text="${#strings.toUpperCase(#strings.substring(currentUser, 0, 1))}">U</div>
+            <div class="user-details"><h4 th:text="${currentUser}">Caretaker</h4><span>Caretaker</span></div>
+        </div>
+        <form th:action="@{/logout}" method="post" style="margin-top:8px;">
+            <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+        </form>
+    </div>
+</nav>
+
+<div class="main">
+    <div class="topbar">
+        <div class="page-title">
+            <h1><i class="fas fa-exclamation-triangle" style="color:var(--accent-red); margin-right:10px;"></i>Emergency SOS Center</h1>
+            <p>Trigger and manage emergency alerts for patients</p>
+        </div>
+    </div>
+
+    <div class="content">
+        <div th:if="${sosTriggered}" class="flash-sos">
+            <i class="fas fa-bell" style="font-size:20px;"></i>
+            <span th:text="${sosTriggered}"></span>
+        </div>
+        <div th:if="${success}" class="flash-success">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+        </div>
+
+        <div class="stats-row">
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background:rgba(248,81,73,0.15); color:var(--accent-red);"><i class="fas fa-bell"></i></div>
+                <div class="mini-stat-info">
+                    <h3 th:text="${#lists.size(activeAlerts)}" style="color:var(--accent-red);">0</h3>
+                    <p>Active Alerts</p>
+                </div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background:rgba(63,185,80,0.15); color:var(--accent-green);"><i class="fas fa-check"></i></div>
+                <div class="mini-stat-info">
+                    <h3 th:text="${#lists.size(alerts.?[status.name() == 'RESOLVED'])}">0</h3>
+                    <p>Resolved</p>
+                </div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background:rgba(88,213,200,0.15); color:var(--accent-cyan);"><i class="fas fa-list"></i></div>
+                <div class="mini-stat-info">
+                    <h3 th:text="${#lists.size(alerts)}">0</h3>
+                    <p>Total Alerts</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout">
+            <!-- SOS Trigger Panel -->
+            <div>
+                <div class="sos-trigger-card">
+                    <div class="sos-card-title">🚨 Emergency SOS</div>
+                    <div class="sos-card-subtitle">Immediately alert emergency services and staff</div>
+                    <div class="sos-btn-giant" id="sosPulseBtn">
+                        <i class="fas fa-exclamation"></i>
+                    </div>
+                    <form th:action="@{/emergency/sos}" method="post" class="sos-form" id="sosForm">
+                        <div class="form-group">
+                            <label class="form-label">Select Patient *</label>
+                            <select name="patientId" class="form-control" required id="sosPatientSelect">
+                                <option value="">Choose patient in emergency...</option>
+                                <option th:each="p : ${patients}" th:value="${p.id}"
+                                        th:text="${p.fullName + (p.roomNumber != null ? ' — Room ' + p.roomNumber : '')}"></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Emergency Description</label>
+                            <textarea name="description" class="form-control" rows="2"
+                                      placeholder="Describe the emergency situation..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Location / Room Details</label>
+                            <input type="text" name="locationDetails" class="form-control"
+                                   placeholder="e.g., Room 201, corridor near elevator">
+                        </div>
+                        <button type="submit" class="btn-sos-full" onclick="return confirmSOS()">
+                            <i class="fas fa-exclamation-circle"></i> TRIGGER SOS ALERT
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Active Alerts Summary -->
+                <div class="card" th:if="${not #lists.isEmpty(activeAlerts)}">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-fire"></i> Active Alerts</div>
+                        <span style="font-size:12px; color:var(--accent-red); font-weight:700;"
+                              th:text="${#lists.size(activeAlerts) + ' ACTIVE'}">0 ACTIVE</span>
+                    </div>
+                    <div th:each="alert : ${activeAlerts}" style="padding:12px 16px; border-bottom:1px solid var(--border);">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <div style="font-weight:700; font-size:14px; color:var(--accent-red);"
+                                     th:text="${alert.patient.fullName}">Patient</div>
+                                <div style="font-size:12px; color:var(--text-muted); margin-top:3px;"
+                                     th:text="${#temporals.format(alert.triggeredAt, 'MMM dd, HH:mm')}">Time</div>
+                                <div th:if="${alert.description != null}" style="font-size:12px; color:var(--text-secondary); margin-top:4px;"
+                                     th:text="${alert.description}">Desc</div>
+                            </div>
+                            <form th:action="@{/emergency/{id}/resolve(id=${alert.id})}" method="post">
+                                <button type="submit" class="resolve-btn"><i class="fas fa-check"></i> Resolve</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Alerts Table -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-history"></i> Alert History</div>
+                        <span style="font-size:12px; color:var(--text-muted);" th:text="${#lists.size(alerts) + ' total'}">0 total</span>
+                    </div>
+                    <div th:if="${#lists.isEmpty(alerts)}" class="empty-state">
+                        <i class="fas fa-check-circle" style="color:var(--accent-green); opacity:0.5;"></i>
+                        <p>No emergency alerts recorded yet.<br>All patients are safe.</p>
+                    </div>
+                    <div style="overflow-x:auto;" th:if="${not #lists.isEmpty(alerts)}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                    <th>Location</th>
+                                    <th>Triggered By</th>
+                                    <th>Triggered At</th>
+                                    <th>Resolved By</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="alert : ${alerts}"
+                                th:classappend="${alert.status.name() == 'ACTIVE' ? 'active-alert-row' : ''}">
+                                <td>
+                                    <div style="font-weight:600;" th:text="${alert.patient.fullName}">-</div>
+                                    <div style="font-size:11px; color:var(--text-muted);" th:text="${alert.patient.roomNumber}">-</div>
+                                </td>
+                                <td><span class="badge badge-critical" th:text="${alert.alertType}">SOS</span></td>
+                                <td>
+                                    <span th:classappend="${alert.severity.name() == 'CRITICAL' ? 'severity-critical' : (alert.severity.name() == 'HIGH' ? 'severity-high' : (alert.severity.name() == 'MEDIUM' ? 'severity-medium' : 'severity-low'))}"
+                                          th:text="${alert.severity}">-</span>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${alert.status.name() == 'ACTIVE' ? 'badge-active' : (alert.status.name() == 'RESOLVED' ? 'badge-resolved' : 'badge-ack')}"
+                                          th:text="${alert.status}">-</span>
+                                </td>
+                                <td style="max-width:160px; font-size:12px; color:var(--text-secondary);"
+                                    th:text="${alert.description != null ? #strings.abbreviate(alert.description, 50) : '—'}">-</td>
+                                <td style="font-size:12px; color:var(--text-muted);"
+                                    th:text="${alert.locationDetails != null ? alert.locationDetails : '—'}">-</td>
+                                <td style="font-size:12px; color:var(--text-secondary);" th:text="${alert.triggeredBy}">-</td>
+                                <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;"
+                                    th:text="${#temporals.format(alert.triggeredAt,'MM/dd HH:mm')}">-</td>
+                                <td style="font-size:12px; color:var(--accent-green);"
+                                    th:text="${alert.resolvedBy != null ? alert.resolvedBy : '—'}">-</td>
+                                <td>
+                                    <form th:if="${alert.status.name() == 'ACTIVE'}"
+                                          th:action="@{/emergency/{id}/resolve(id=${alert.id})}" method="post">
+                                        <button type="submit" class="resolve-btn"><i class="fas fa-check"></i> Resolve</button>
+                                    </form>
+                                    <span th:if="${alert.status.name() != 'ACTIVE'}" style="color:var(--text-muted); font-size:12px;">—</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('sosPulseBtn').addEventListener('click', function() {
+    document.getElementById('sosPatientSelect').focus();
+    this.style.transform = 'scale(1.15)';
+    setTimeout(() => this.style.transform = '', 300);
+});
+
+function confirmSOS() {
+    const patient = document.getElementById('sosPatientSelect');
+    if (!patient.value) { patient.focus(); return false; }
+    return confirm('⚠️ CRITICAL: Are you sure you want to trigger an EMERGENCY SOS alert for this patient?\n\nThis will create an ACTIVE emergency alert in the system.');
+}
+</script>
+</body>
+</html>
