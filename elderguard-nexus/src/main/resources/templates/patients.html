@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients - ElderGuard Nexus</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117; --bg-secondary: #161b22; --bg-card: #1c2333; --bg-hover: #21262d;
+            --border: #30363d; --text-primary: #e6edf3; --text-secondary: #8b949e; --text-muted: #6e7681;
+            --accent-cyan: #58d5c8; --accent-blue: #58a6ff; --accent-green: #3fb950;
+            --accent-yellow: #d29922; --accent-red: #f85149; --accent-purple: #bc8cff;
+            --gradient-1: linear-gradient(135deg, #58d5c8, #58a6ff);
+            --gradient-3: linear-gradient(135deg, #f85149, #ff7b72);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+        .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 42px; height: 42px; background: var(--gradient-1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; }
+        .logo-text h2 { font-size: 16px; font-weight: 700; }
+        .logo-text span { font-size: 11px; color: var(--text-muted); }
+        .nav-section { padding: 16px 12px 8px; }
+        .nav-section-title { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 8px; margin-bottom: 6px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: var(--text-secondary); font-size: 14px; font-weight: 500; text-decoration: none; transition: all 0.2s; margin-bottom: 2px; }
+        .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .nav-item.active { background: rgba(88,213,200,0.1); color: var(--accent-cyan); }
+        .nav-item i { width: 18px; text-align: center; font-size: 15px; }
+        .nav-badge { margin-left: auto; background: var(--accent-red); color: white; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+        .sidebar-footer { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border); }
+        .user-info { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg-card); }
+        .user-avatar { width: 36px; height: 36px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 700; }
+        .user-details h4 { font-size: 13px; font-weight: 600; }
+        .user-details span { font-size: 11px; color: var(--text-muted); }
+        .logout-btn { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; background: rgba(248,81,73,0.1); color: var(--accent-red); text-decoration: none; font-size: 13px; font-weight: 500; margin-top: 8px; transition: all 0.2s; border: none; cursor: pointer; width: 100%; }
+        .logout-btn:hover { background: rgba(248,81,73,0.2); }
+        .main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+        .topbar { padding: 16px 28px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .page-title h1 { font-size: 20px; font-weight: 700; }
+        .page-title p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; border: none; transition: all 0.2s; }
+        .btn-primary { background: var(--gradient-1); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-danger { background: rgba(248,81,73,0.1); color: var(--accent-red); border: 1px solid rgba(248,81,73,0.2); }
+        .btn-danger:hover { background: rgba(248,81,73,0.2); }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
+        .content { padding: 24px 28px; flex: 1; }
+        .flash-alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .flash-success { background: rgba(63,185,80,0.1); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.2); }
+        .search-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+        .search-input { flex: 1; padding: 10px 16px 10px 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-size: 14px; outline: none; }
+        .search-input:focus { border-color: var(--accent-cyan); }
+        .search-wrapper { position: relative; flex: 1; }
+        .search-wrapper i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
+        td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        .patient-cell { display: flex; align-items: center; gap: 12px; }
+        .patient-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--gradient-1); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .patient-name { font-weight: 600; font-size: 14px; }
+        .patient-id { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-active { background: rgba(63,185,80,0.12); color: var(--accent-green); }
+        .badge-inactive { background: rgba(110,118,129,0.12); color: var(--text-muted); }
+        .action-btns { display: flex; gap: 6px; }
+        .empty-state { text-align: center; padding: 60px; color: var(--text-muted); }
+        .empty-state i { font-size: 50px; margin-bottom: 15px; opacity: 0.3; display: block; }
+        .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-secondary); }
+        .empty-state p { font-size: 13px; margin-bottom: 20px; }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+        .mini-stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+        .mini-stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .mini-stat-info h3 { font-size: 22px; font-weight: 800; }
+        .mini-stat-info p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    </style>
+</head>
+<body>
+<nav class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fas fa-shield-heart"></i></div>
+        <div class="logo-text"><h2>ElderGuard</h2><span>Nexus v1.0</span></div>
+    </div>
+    <div style="flex:1; overflow-y:auto; padding: 8px 0;">
+        <div class="nav-section">
+            <div class="nav-section-title">Main</div>
+            <a href="/dashboard" class="nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="/patients" class="nav-item active"><i class="fas fa-users"></i> Patients</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Clinical</div>
+            <a href="/health" class="nav-item"><i class="fas fa-heartbeat"></i> Health Monitor</a>
+            <a href="/emergency" class="nav-item"><i class="fas fa-exclamation-triangle"></i> Emergency SOS</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Services</div>
+            <a href="/orders" class="nav-item"><i class="fas fa-shopping-cart"></i> Orders</a>
+        </div>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar" th:text="${#strings.toUpperCase(#strings.substring(currentUser, 0, 1))}">U</div>
+            <div class="user-details"><h4 th:text="${currentUser}">Caretaker</h4><span>Caretaker</span></div>
+        </div>
+        <form th:action="@{/logout}" method="post" style="margin-top:8px;">
+            <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+        </form>
+    </div>
+</nav>
+
+<div class="main">
+    <div class="topbar">
+        <div class="page-title">
+            <h1><i class="fas fa-users" style="color:var(--accent-cyan); margin-right:10px;"></i>Patient Management</h1>
+            <p>Manage all registered elderly patients in the system</p>
+        </div>
+        <a href="/patients/add" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add New Patient</a>
+    </div>
+    <div class="content">
+        <div th:if="${success}" class="flash-alert flash-success">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+        </div>
+
+        <div class="stats-row">
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background:rgba(88,213,200,0.15); color:var(--accent-cyan);"><i class="fas fa-users"></i></div>
+                <div class="mini-stat-info">
+                    <h3 th:text="${patients.size()}">0</h3>
+                    <p>Total Patients</p>
+                </div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background:rgba(63,185,80,0.15); color:var(--accent-green);"><i class="fas fa-user-check"></i></div>
+                <div class="mini-stat-info">
+                    <h3 th:text="${#lists.size(patients.?[status == 'Active'])}">0</h3>
+                    <p>Active</p>
+                </div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background:rgba(88,166,255,0.15); color:var(--accent-blue);"><i class="fas fa-bed"></i></div>
+                <div class="mini-stat-info">
+                    <h3 th:text="${#lists.size(patients.?[roomNumber != null])}">0</h3>
+                    <p>Assigned Rooms</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search patients by name, room, blood group...">
+            </div>
+        </div>
+
+        <div class="card">
+            <div th:if="${#lists.isEmpty(patients)}" class="empty-state">
+                <i class="fas fa-user-injured"></i>
+                <h3>No Patients Registered</h3>
+                <p>Start by adding your first elderly patient to the system</p>
+                <a href="/patients/add" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add First Patient</a>
+            </div>
+            <table th:if="${not #lists.isEmpty(patients)}" id="patientTable">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Age / Gender</th>
+                        <th>Blood Group</th>
+                        <th>Room</th>
+                        <th>Emergency Contact</th>
+                        <th>Status</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="patient : ${patients}">
+                    <td>
+                        <div class="patient-cell">
+                            <div class="patient-avatar" th:text="${#strings.toUpperCase(#strings.substring(patient.fullName, 0, 1))}">P</div>
+                            <div>
+                                <div class="patient-name" th:text="${patient.fullName}">Name</div>
+                                <div class="patient-id" th:text="${patient.medicalConditions != null ? #strings.abbreviate(patient.medicalConditions, 40) : 'No conditions listed'}">-</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td th:text="${patient.age + ' yrs / ' + (patient.gender != null ? patient.gender : 'N/A')}">-</td>
+                    <td>
+                        <span th:if="${patient.bloodGroup != null}" style="font-weight:700; color:var(--accent-red);" th:text="${patient.bloodGroup}">-</span>
+                        <span th:if="${patient.bloodGroup == null}" style="color:var(--text-muted)">N/A</span>
+                    </td>
+                    <td>
+                        <span th:if="${patient.roomNumber != null}" style="font-weight:600; color:var(--accent-cyan);" th:text="${patient.roomNumber}">-</span>
+                        <span th:if="${patient.roomNumber == null}" style="color:var(--text-muted)">Unassigned</span>
+                    </td>
+                    <td>
+                        <div th:if="${patient.emergencyContact != null}">
+                            <div style="font-size:12px;" th:text="${patient.emergencyContact}">-</div>
+                            <div style="font-size:11px; color:var(--accent-cyan);" th:text="${patient.emergencyContactPhone}">-</div>
+                        </div>
+                        <span th:if="${patient.emergencyContact == null}" style="color:var(--text-muted); font-size:12px;">Not set</span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${patient.status == 'Active' ? 'badge-active' : 'badge-inactive'}"
+                              th:text="${patient.status}">Active</span>
+                    </td>
+                    <td style="color:var(--text-muted); font-size:12px;"
+                        th:text="${#temporals.format(patient.registeredAt, 'MMM dd, yyyy')}">-</td>
+                    <td>
+                        <div class="action-btns">
+                            <a th:href="@{/patients/{id}(id=${patient.id})}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a th:href="@{/health/patient/{id}(id=${patient.id})}" class="btn btn-sm" style="background:rgba(88,213,200,0.1); color:var(--accent-cyan); border:1px solid rgba(88,213,200,0.2);">
+                                <i class="fas fa-heartbeat"></i>
+                            </a>
+                            <form th:action="@{/patients/{id}/delete(id=${patient.id})}" method="post" style="display:inline;"
+                                  onsubmit="return confirm('Remove this patient from the system?')">
+                                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#patientTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - ElderGuard Nexus</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117; --bg-secondary: #161b22; --bg-card: #1c2333; --bg-hover: #21262d;
+            --border: #30363d; --text-primary: #e6edf3; --text-secondary: #8b949e; --text-muted: #6e7681;
+            --accent-cyan: #58d5c8; --accent-blue: #58a6ff; --accent-green: #3fb950;
+            --accent-yellow: #d29922; --accent-red: #f85149; --accent-purple: #bc8cff;
+            --gradient-1: linear-gradient(135deg, #58d5c8, #58a6ff);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+        .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 42px; height: 42px; background: var(--gradient-1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; }
+        .logo-text h2 { font-size: 16px; font-weight: 700; }
+        .logo-text span { font-size: 11px; color: var(--text-muted); }
+        .nav-section { padding: 16px 12px 8px; }
+        .nav-section-title { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 8px; margin-bottom: 6px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: var(--text-secondary); font-size: 14px; font-weight: 500; text-decoration: none; transition: all 0.2s; margin-bottom: 2px; }
+        .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .nav-item.active { background: rgba(88,213,200,0.1); color: var(--accent-cyan); }
+        .nav-item i { width: 18px; text-align: center; font-size: 15px; }
+        .nav-badge { margin-left: auto; background: var(--accent-red); color: white; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+        .sidebar-footer { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border); }
+        .user-info { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg-card); }
+        .user-avatar { width: 36px; height: 36px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 700; }
+        .user-details h4 { font-size: 13px; font-weight: 600; }
+        .user-details span { font-size: 11px; color: var(--text-muted); }
+        .logout-btn { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; background: rgba(248,81,73,0.1); color: var(--accent-red); border: none; cursor: pointer; width: 100%; font-size: 13px; font-weight: 500; margin-top: 8px; transition: all 0.2s; }
+        .logout-btn:hover { background: rgba(248,81,73,0.2); }
+        .main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+        .topbar { padding: 16px 28px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .page-title h1 { font-size: 20px; font-weight: 700; }
+        .page-title p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; border: none; transition: all 0.2s; }
+        .btn-primary { background: var(--gradient-1); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-sm { padding: 5px 11px; font-size: 12px; }
+        .content { padding: 24px 28px; flex: 1; }
+        .flash-success { background: rgba(63,185,80,0.1); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.2); padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
+        .form-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; position: sticky; top: 80px; }
+        .form-tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .form-tab { flex: 1; padding: 14px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; background: transparent; color: var(--text-secondary); }
+        .form-tab.active { color: var(--accent-cyan); background: rgba(88,213,200,0.05); border-bottom: 2px solid var(--accent-cyan); }
+        .form-tab:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .form-body { padding: 20px; }
+        .form-group { margin-bottom: 14px; }
+        .form-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 10px 13px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none; transition: all 0.2s; font-family: inherit; }
+        .form-control:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(88,213,200,0.1); }
+        .form-control::placeholder { color: var(--text-muted); }
+        select.form-control option { background: var(--bg-card); }
+        textarea.form-control { resize: vertical; min-height: 70px; }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+        .mini-stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+        .mini-stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .mini-stat-info h3 { font-size: 20px; font-weight: 800; }
+        .mini-stat-info p { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .tab-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+        .tab-btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); transition: all 0.2s; }
+        .tab-btn.active { background: rgba(88,213,200,0.1); color: var(--accent-cyan); border-color: rgba(88,213,200,0.3); }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .card-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 9px; }
+        .card-title i { color: var(--accent-cyan); }
+        table { width: 100%; border-collapse: collapse; }
+        th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
+        td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-food { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+        .badge-medicine { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+        .badge-pending { background: rgba(210,153,34,0.12); color: var(--accent-yellow); }
+        .badge-delivered { background: rgba(63,185,80,0.12); color: var(--accent-green); }
+        .badge-processing { background: rgba(88,213,200,0.12); color: var(--accent-cyan); }
+        .badge-cancelled { background: rgba(110,118,129,0.12); color: var(--text-muted); }
+        .empty-state { text-align: center; padding: 50px; color: var(--text-muted); }
+        .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.3; display: block; }
+        .status-form { display: flex; gap: 6px; align-items: center; }
+        .status-select { padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 12px; outline: none; }
+        .status-select option { background: var(--bg-card); }
+        .update-btn { padding: 4px 10px; background: rgba(88,213,200,0.1); color: var(--accent-cyan); border: 1px solid rgba(88,213,200,0.2); border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .update-btn:hover { background: rgba(88,213,200,0.2); }
+        .order-row-food { border-left: 3px solid var(--accent-blue); }
+        .order-row-med { border-left: 3px solid var(--accent-purple); }
+    </style>
+</head>
+<body>
+<nav class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fas fa-shield-heart"></i></div>
+        <div class="logo-text"><h2>ElderGuard</h2><span>Nexus v1.0</span></div>
+    </div>
+    <div style="flex:1; overflow-y:auto; padding: 8px 0;">
+        <div class="nav-section">
+            <div class="nav-section-title">Main</div>
+            <a href="/dashboard" class="nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="/patients" class="nav-item"><i class="fas fa-users"></i> Patients</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Clinical</div>
+            <a href="/health" class="nav-item"><i class="fas fa-heartbeat"></i> Health Monitor</a>
+            <a href="/emergency" class="nav-item"><i class="fas fa-exclamation-triangle"></i> Emergency SOS</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Services</div>
+            <a href="/orders" class="nav-item active"><i class="fas fa-shopping-cart"></i> Orders</a>
+        </div>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar" th:text="${#strings.toUpperCase(#strings.substring(currentUser, 0, 1))}">U</div>
+            <div class="user-details"><h4 th:text="${currentUser}">Caretaker</h4><span>Caretaker</span></div>
+        </div>
+        <form th:action="@{/logout}" method="post" style="margin-top:8px;">
+            <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+        </form>
+    </div>
+</nav>
+
+<div class="main">
+    <div class="topbar">
+        <div class="page-title">
+            <h1><i class="fas fa-shopping-cart" style="color:var(--accent-cyan); margin-right:10px;"></i>Order Management</h1>
+            <p>Manage food &amp; pharmacy orders for patients</p>
+        </div>
+    </div>
+    <div class="content">
+        <div th:if="${success}" class="flash-success">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+        </div>
+
+        <div class="stats-row">
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background:rgba(88,213,200,0.15); color:var(--accent-cyan);"><i class="fas fa-list"></i></div>
+                <div class="mini-stat-info"><h3 th:text="${orders.size()}">0</h3><p>Total Orders</p></div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background:rgba(210,153,34,0.15); color:var(--accent-yellow);"><i class="fas fa-clock"></i></div>
+                <div class="mini-stat-info">
+                    <h3 th:text="${#lists.size(orders.?[status.name() == 'PENDING'])}">0</h3>
+                    <p>Pending</p>
+                </div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background:rgba(63,185,80,0.15); color:var(--accent-green);"><i class="fas fa-check"></i></div>
+                <div class="mini-stat-info">
+                    <h3 th:text="${#lists.size(orders.?[status.name() == 'DELIVERED'])}">0</h3>
+                    <p>Delivered</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout">
+            <!-- Order Form -->
+            <div class="form-card">
+                <div class="form-tabs">
+                    <button class="form-tab active" onclick="switchTab('food', this)" type="button">
+                        <i class="fas fa-utensils"></i> Food Order
+                    </button>
+                    <button class="form-tab" onclick="switchTab('pharmacy', this)" type="button">
+                        <i class="fas fa-pills"></i> Pharmacy
+                    </button>
+                </div>
+                <div class="form-body">
+                    <form th:action="@{/orders/add}" method="post" id="orderForm">
+                        <input type="hidden" name="orderType" id="orderTypeInput" value="FOOD">
+                        <div class="form-group">
+                            <label class="form-label">Patient *</label>
+                            <select name="patientId" class="form-control" required>
+                                <option value="">Select patient...</option>
+                                <option th:each="p : ${patients}" th:value="${p.id}"
+                                        th:text="${p.fullName + (p.roomNumber != null ? ' - ' + p.roomNumber : '')}"></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" id="itemLabel">Food Item *</label>
+                            <input type="text" name="itemName" id="itemInput" class="form-control" placeholder="e.g., Low-sodium soup, Juice" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" name="quantity" class="form-control" placeholder="e.g., 1" min="1" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Price (optional)</label>
+                            <input type="number" name="price" class="form-control" placeholder="0.00" step="0.01" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Special Instructions</label>
+                            <textarea name="specialInstructions" class="form-control" id="instructionsInput"
+                                      placeholder="Dietary restrictions, dosage, etc."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+                            <i class="fas fa-plus-circle"></i> Place Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div>
+                <div class="tab-bar">
+                    <button class="tab-btn active" onclick="filterOrders('all', this)" type="button">All Orders</button>
+                    <button class="tab-btn" onclick="filterOrders('FOOD', this)" type="button"><i class="fas fa-utensils"></i> Food</button>
+                    <button class="tab-btn" onclick="filterOrders('MEDICINE', this)" type="button"><i class="fas fa-pills"></i> Medicine</button>
+                    <button class="tab-btn" onclick="filterOrders('PENDING', this)" type="button"><i class="fas fa-clock"></i> Pending</button>
+                </div>
+                <div class="card">
+                    <div th:if="${#lists.isEmpty(orders)}" class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <p>No orders yet. Use the form to place the first order.</p>
+                    </div>
+                    <div style="overflow-x:auto;" th:if="${not #lists.isEmpty(orders)}">
+                        <table id="ordersTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Patient</th>
+                                    <th>Item</th>
+                                    <th>Type</th>
+                                    <th>Qty</th>
+                                    <th>Status</th>
+                                    <th>Ordered By</th>
+                                    <th>Date</th>
+                                    <th>Update</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="order, stat : ${orders}"
+                                th:classappend="${order.orderType.name() == 'FOOD' ? 'order-row-food' : 'order-row-med'}"
+                                th:data-type="${order.orderType.name()}"
+                                th:data-status="${order.status.name()}">
+                                <td style="color:var(--text-muted);" th:text="${stat.count}">1</td>
+                                <td>
+                                    <div style="font-weight:600;" th:text="${order.patient.fullName}">-</div>
+                                    <div style="font-size:11px; color:var(--text-muted);" th:text="${order.patient.roomNumber}">-</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight:500;" th:text="${order.itemName}">-</div>
+                                    <div th:if="${order.specialInstructions != null}" style="font-size:11px; color:var(--text-muted);"
+                                         th:text="${#strings.abbreviate(order.specialInstructions, 35)}">-</div>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${order.orderType.name() == 'FOOD' ? 'badge-food' : 'badge-medicine'}"
+                                          th:text="${order.orderType}">-</span>
+                                </td>
+                                <td th:text="${order.quantity != null ? order.quantity : 1}">1</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${order.status.name() == 'PENDING' ? 'badge-pending' : (order.status.name() == 'DELIVERED' ? 'badge-delivered' : (order.status.name() == 'PROCESSING' ? 'badge-processing' : 'badge-cancelled'))}"
+                                          th:text="${order.status}">-</span>
+                                </td>
+                                <td style="font-size:12px; color:var(--text-secondary);" th:text="${order.orderedBy}">-</td>
+                                <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;"
+                                    th:text="${#temporals.format(order.orderedAt,'MM/dd HH:mm')}">-</td>
+                                <td>
+                                    <form th:action="@{/orders/{id}/status(id=${order.id})}" method="post" class="status-form">
+                                        <select name="status" class="status-select">
+                                            <option value="PENDING" th:selected="${order.status.name() == 'PENDING'}">Pending</option>
+                                            <option value="PROCESSING" th:selected="${order.status.name() == 'PROCESSING'}">Processing</option>
+                                            <option value="DELIVERED" th:selected="${order.status.name() == 'DELIVERED'}">Delivered</option>
+                                            <option value="CANCELLED" th:selected="${order.status.name() == 'CANCELLED'}">Cancelled</option>
+                                        </select>
+                                        <button type="submit" class="update-btn"><i class="fas fa-sync"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(type, btn) {
+    document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const isFood = type === 'food';
+    document.getElementById('orderTypeInput').value = isFood ? 'FOOD' : 'MEDICINE';
+    document.getElementById('itemLabel').textContent = isFood ? 'Food Item *' : 'Medicine / Drug Name *';
+    document.getElementById('itemInput').placeholder = isFood ? 'e.g., Low-sodium soup, Fresh juice' : 'e.g., Metformin 500mg, Aspirin 75mg';
+    document.getElementById('instructionsInput').placeholder = isFood ? 'Dietary restrictions, temperature preference...' : 'Dosage, frequency, storage instructions...';
+}
+function filterOrders(filter, btn) {
+    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#ordersTable tbody tr').forEach(row => {
+        if (filter === 'all') { row.style.display = ''; return; }
+        const type = row.getAttribute('data-type') || '';
+        const status = row.getAttribute('data-status') || '';
+        row.style.display = (type === filter || status === filter) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>
